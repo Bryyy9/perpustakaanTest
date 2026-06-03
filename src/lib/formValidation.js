@@ -58,7 +58,7 @@ function validateField(field, rawValue, mode) {
     }
 
     const value = Number(normalized)
-    if (!Number.isSafeInteger(value) || value <= 0) {
+    if (!Number.isSafeInteger(value) || value < 0) {
       return { error: `${field.label} harus berupa angka bulat positif.` }
     }
 
@@ -86,6 +86,7 @@ function validateField(field, rawValue, mode) {
 
   if (fieldType === 'datetime' || fieldType === 'date') {
     if (isBlank(rawValue)) {
+      if (field.omitWhenEmpty) return { skip: true }
       if (field.required) return { error: `${field.label} wajib diisi.` }
       return { skip: true }
     }

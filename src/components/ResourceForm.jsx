@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 import {
   normalizeInitialFieldValue,
   validateResourceForm,
   visibleInMode,
 } from '../lib/formValidation'
 
-const blankValue = () => ''
-
-export default function ResourceForm({
+const ResourceForm = memo(function ResourceForm({
   fields,
   initialValues,
   onSubmit,
@@ -21,8 +19,7 @@ export default function ResourceForm({
     fields.forEach((field) => {
       if (!visibleInMode(field, mode)) return
       const raw = initialValues?.[field.name]
-      next[field.name] =
-        raw !== undefined && raw !== null ? normalizeInitialFieldValue(field, raw) : blankValue()
+      next[field.name] = raw !== undefined && raw !== null ? normalizeInitialFieldValue(field, raw) : ''
     })
     return next
   }, [fields, initialValues, mode])
@@ -102,7 +99,6 @@ export default function ResourceForm({
                   value={values[field.name]}
                   onChange={(event) => handleChange(field.name, event.target.value)}
                   className={inputClass}
-                  readOnly={isReadOnly}
                   aria-invalid={Boolean(fieldErrors[field.name])}
                   disabled={isReadOnly}
                 >
@@ -167,4 +163,6 @@ export default function ResourceForm({
       </div>
     </form>
   )
-}
+})
+
+export default ResourceForm

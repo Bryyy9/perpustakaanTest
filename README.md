@@ -23,13 +23,17 @@ Tidak ada state management global selain React Context (hanya untuk auth). Tidak
 
 ## Palette warna
 
-| Hex | Peran |
-|---|---|
-| `#BBD5DA` | Tombol utama, border aksen, active indicator sidebar |
-| `#DFF1F1` | Background active link sidebar |
-| `#F5F5F5` | Background hover (card, sidebar, tombol sekunder) |
-| `#FF0000` | Error, tombol hapus, alert destructive |
-| `slate` (50–900) | Teks, border, background halaman (netral) |
+Warna didefinisikan sebagai CSS custom properties di `src/index.css` via `@theme` (Tailwind v4):
+
+| Token | Hex | Peran |
+|---|---|---|
+| `primary` | `#BBD5DA` | Tombol utama, border aksen, active indicator sidebar |
+| `primary-light` | `#DFF1F1` | Background active link sidebar |
+| `primary-hover` | `#a8c4c9` | Hover tombol utama |
+| `primary-text` | `#4a6a70` | Teks aksen |
+| `danger` | `#FF0000` | Error, tombol hapus, alert destructive |
+| `surface-hover` | `#F5F5F5` | Background hover (card, sidebar, tombol sekunder) |
+| `slate` (50–900) | — | Teks, border, background halaman (netral) |
 
 ---
 
@@ -66,9 +70,9 @@ Struktur Layout:
       /login  →  <Login />
       /*       →  <ProtectedRoute>
                     <Layout>
-                      <Sidebar />           ← fixed, h-screen
+                      <Sidebar />           ← fixed, h-screen (drawer di mobile)
                       <main>
-                        <header />          ← shrink-0
+                        <header />          ← shrink-0, berisi hamburger di mobile
                         <div flex-1 overflow-y-auto>
                           <Outlet />        ← SCROLL AREA
 ```
@@ -86,11 +90,11 @@ Header menggunakan `shrink-0` (bukan `sticky`) karena sudah berada di bagian ata
 ### 2. Sidebar navigasi
 
 Menggunakan `NavLink` dari React Router. Active link punya indikator visual:
-- Border kiri `#BBD5DA` tebal 3px
-- Background `#DFF1F1`
-- Teks `#4a6a70`
+- Border kiri `primary` tebal 3px
+- Background `primary-light`
+- Teks `primary-text`
 
-Hover link menggunakan background `#F5F5F5`.
+Di layar `md` ke atas, sidebar muncul sebagai panel tetap di kiri. Di bawah `md`, sidebar disembunyikan dan dapat dibuka via tombol hamburger di header — muncul sebagai drawer overlay dengan backdrop. Menutup otomatis saat link diklik atau tombol Escape ditekan.
 
 ### 3. CRUD generik (ResourcePage + ResourceForm)
 
@@ -106,8 +110,11 @@ Perbedaan tiap entitas dikonfigurasi di `src/config/resources.js`:
 - Text, number, textarea, select, datetime, date
 - Validasi client-side (`minLength`, `format: 'email'`, required)
 - Visibility per mode (`modes: ['create']` / `modes: ['edit']`)
+- `omitWhenEmpty: true` — field opsional tidak dikirim ke API jika kosong
 - Derived values (id_anggota terisi otomatis saat pilih peminjaman di form denda)
 - Suggestions untuk field ID anggota
+
+Search input menggunakan debounce 300ms sebelum mengirim request ke API.
 
 ### 4. DataTable
 
@@ -119,31 +126,43 @@ Komponen tabel generik dengan fitur:
 - Empty state
 - Tombol aksi (Detail / Edit / Hapus)
 
-### 5. Dashboard
+### 5. Modal
+
+Modal dialog dengan aksesibilitas penuh:
+- Tombol × untuk menutup
+- Klik backdrop untuk menutup
+- Escape key untuk menutup
+- Focus trap (Tab / Shift+Tab terkurung di dalam modal)
+- `role="dialog"` + `aria-modal="true"` + `aria-labelledby`
+
+### 6. Dashboard
 
 Layout atipikal — tidak menggunakan grid card seragam:
 - Summary bar di atas (angka total record)
-- Grid kartu dengan border-top aksen `#BBD5DA`, masing-masing menuju halaman terkait
+- Grid kartu dengan border-top aksen `primary`, masing-masing menuju halaman terkait
 - "Shortcut kerja": daftar navigasi cepat
 - Aside: panduan kerja + status tampilan
 
 Data dimuat paralel via `useQueries` dari TanStack Query.
 
-### 6. Validasi form
+### 7. Validasi form
 
 Form validation logic dipisah di `src/lib/formValidation.js`:
-- `validateResourceForm` — validasi CRUD fields (required, minLength, email, number, select)
+- `validateResourceForm` — validasi CRUD fields (required, minLength, email, number, select, omitWhenEmpty)
 - `validateLoginForm` — validasi login (username + password required)
-- Error per-field ditampilkan dengan teks merah `#FF0000`
+- Error per-field ditampilkan dengan teks merah
 - Form-level error box di atas tombol submit
+- Field number menerima nilai 0 sebagai valid
 
-### 7. Autentikasi
+### 8. Autentikasi
 
 Auth state disimpan di React Context (`AuthContext`) + localStorage. Token otomatis dikirim via Axios interceptor (`src/lib/http.js`). Jika response 401, dispatch event `auth:expired` yang memicu logout otomatis.
 
 `ProtectedRoute` mengecek `isAuthenticated` — redirect ke `/login` jika tidak valid.
 
-### 8. Notifikasi
+Form login memiliki `autoComplete="username"` dan `autoComplete="current-password"` untuk mendukung password manager.
+
+### 9. Notifikasi
 
 Semua feedback (sukses/error/konfirmasi) menggunakan SweetAlert2 via `src/lib/alerts.js`:
 - `showSuccessAlert` — operasi berhasil
@@ -151,6 +170,10 @@ Semua feedback (sukses/error/konfirmasi) menggunakan SweetAlert2 via `src/lib/al
 - `showConfirmAlert` — konfirmasi sebelum hapus
 
 Error message dari backend diparse di `getApiErrorMessage` untuk menampilkan pesan yang ramah (termasuk pesan spesifik untuk foreign key constraint `id_anggota` / `id_peminjaman`).
+
+### 10. Loading & error state
+
+Halaman detail (`BukuDetail`, `PeminjamanDetail`) menampilkan skeleton penuh saat loading dan pesan error eksplisit jika fetch gagal — bukan teks kecil di bawah konten kosong.
 
 ---
 
@@ -161,24 +184,24 @@ src/
 ├── api/
 │   ├── index.js              # Inisialisasi semua API endpoint
 │   ├── auth.js               # Login API
-│   └── resources.js          # Factory createCrudApi / createListApi
+│   └── resources.js          # Factory createCrudApi
 ├── components/
 │   ├── DataTable.jsx          # Tabel generik (pagination, scroll, skeleton)
 │   ├── Layout.jsx             # Layout utama (sidebar + header + konten)
-│   ├── Modal.jsx              # Modal dialog
+│   ├── Modal.jsx              # Modal dialog (aksesibel, focus trap)
 │   ├── ProtectedRoute.jsx     # Route guard autentikasi
 │   ├── ResourceForm.jsx       # Form generik (dinamis berdasarkan config)
 │   ├── ResourcePage.jsx       # Halaman CRUD generik
-│   └── Sidebar.jsx            # Navigasi sidebar
+│   └── Sidebar.jsx            # Navigasi sidebar (desktop panel + mobile drawer)
 ├── config/
 │   └── resources.js           # Konfigurasi tiap entitas (kolom, field, mapping)
 ├── context/
 │   └── AuthContext.jsx        # Auth state (token, username, login, logout)
 ├── hooks/
-│   └── useAuth.js             # Re-export useAuth dari context
+│   └── useDebounce.js         # Debounce hook untuk search input
 ├── lib/
 │   ├── alerts.js              # SweetAlert2 wrappers
-│   ├── format.js              # Utility format (date, number, dll)
+│   ├── format.js              # Utility format (date, number, extractList, dll)
 │   ├── formValidation.js      # Validasi form resource + login
 │   └── http.js                # Axios instance + interceptor token
 ├── pages/
@@ -194,7 +217,7 @@ src/
 │   ├── Dashboard.jsx
 │   └── Login.jsx
 ├── App.jsx                    # Routing
-├── index.css                  # Tailwind + global styles
+├── index.css                  # Tailwind + @theme (custom color tokens) + global styles
 └── main.jsx                   # Entry point
 ```
 

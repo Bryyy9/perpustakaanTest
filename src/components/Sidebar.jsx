@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 
 const navItems = [
@@ -10,9 +11,9 @@ const navItems = [
   { to: '/admin/denda', label: 'Denda' },
 ]
 
-export default function Sidebar() {
+function NavContent({ onNavigate }) {
   return (
-    <aside className="hidden h-screen w-72 flex-shrink-0 border-r border-slate-200 bg-white text-slate-900 md:flex md:flex-col">
+    <>
       <div className="border-b border-slate-200 px-6 py-5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
           Library OS
@@ -31,12 +32,13 @@ export default function Sidebar() {
               key={item.to}
               to={item.to}
               end={item.to === '/'}
+              onClick={onNavigate}
               className={({ isActive }) =>
                 [
                   'block rounded-xl border-l-[3px] px-4 py-3 text-sm font-medium transition',
                   isActive
-                    ? 'border-l-[#BBD5DA] border-slate-200 bg-[#DFF1F1] text-[#4a6a70]'
-                    : 'border-l-transparent border-transparent text-slate-600 hover:border-l-[#DFF1F1] hover:border-slate-200 hover:bg-[#F5F5F5] hover:text-[#4a6a70]',
+                    ? 'border-l-primary border-slate-200 bg-primary-light text-primary-text'
+                    : 'border-l-transparent border-transparent text-slate-600 hover:border-l-primary-light hover:border-slate-200 hover:bg-surface-hover hover:text-primary-text',
                 ].join(' ')
               }
             >
@@ -52,6 +54,41 @@ export default function Sidebar() {
           </p>
         </div>
       </nav>
-    </aside>
+    </>
+  )
+}
+
+export default function Sidebar({ mobileOpen, onClose }) {
+  // Close on Escape
+  useEffect(() => {
+    if (!mobileOpen) return
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [mobileOpen, onClose])
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden h-screen w-72 flex-shrink-0 flex-col border-r border-slate-200 bg-white text-slate-900 md:flex">
+        <NavContent />
+      </aside>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-slate-950/40"
+            onClick={onClose}
+            aria-hidden="true"
+          />
+          {/* Panel */}
+          <aside className="absolute left-0 top-0 flex h-full w-72 flex-col overflow-y-auto bg-white text-slate-900 shadow-xl">
+            <NavContent onNavigate={onClose} />
+          </aside>
+        </div>
+      )}
+    </>
   )
 }

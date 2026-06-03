@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { validateLoginForm } from '../lib/formValidation'
-import { showErrorAlert, showSuccessAlert } from '../lib/alerts'
+import { showErrorAlert } from '../lib/alerts'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -34,7 +34,6 @@ export default function Login() {
 
     try {
       await login(result.payload)
-      await showSuccessAlert('Berhasil', 'Login berhasil.')
       navigate('/', { replace: true })
     } catch (err) {
       await showErrorAlert('Login gagal', err)
@@ -102,6 +101,7 @@ export default function Login() {
                     })
                     setError('')
                   }}
+                  autoComplete="username"
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                   aria-invalid={Boolean(fieldErrors.username)}
                 />
@@ -125,6 +125,7 @@ export default function Login() {
                     })
                     setError('')
                   }}
+                  autoComplete="current-password"
                   className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                   aria-invalid={Boolean(fieldErrors.password)}
                 />

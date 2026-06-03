@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 import { formatDate, prettyValue } from '../lib/format'
 
 function getRowKey(row, index) {
@@ -9,7 +9,7 @@ function getSkeletonRows(count) {
   return Array.from({ length: count }, (_, index) => index)
 }
 
-export default function DataTable({
+function DataTable({
   columns,
   rows,
   onEdit,
@@ -220,3 +220,5 @@ export default function DataTable({
     </section>
   )
 }
+
+export default memo(DataTable)

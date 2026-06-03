@@ -19,15 +19,6 @@ export function prettyValue(value) {
   return String(value)
 }
 
-export function getErrorMessage(error) {
-  return (
-    error?.response?.data?.msg ||
-    error?.response?.data?.status ||
-    error?.message ||
-    'Terjadi kesalahan'
-  )
-}
-
 export function pickFirst(row, keys) {
   for (const key of keys) {
     if (row?.[key] !== undefined && row?.[key] !== null && row?.[key] !== '') {
@@ -35,4 +26,9 @@ export function pickFirst(row, keys) {
     }
   }
   return ''
+}
+
+export function extractList(response) {
+  const data = response?.data?.data ?? response?.data ?? response
+  return Array.isArray(data) ? data : []
 }
