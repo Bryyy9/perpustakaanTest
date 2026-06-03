@@ -25,10 +25,10 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="flex min-h-screen">
+      <div className="flex h-screen overflow-hidden">
         <Sidebar />
-        <main className="min-w-0 flex-1">
-          <header className="sticky top-0 z-10 border-b border-slate-200 bg-white">
+        <main className="flex min-w-0 flex-1 flex-col">
+          <header className="shrink-0 border-b border-slate-200 bg-white">
             <div className="flex items-center justify-between px-6 py-4">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.24em] text-slate-500">
@@ -52,7 +52,7 @@ export default function Layout() {
             </div>
           </header>
 
-          <div className="min-w-0 p-6">
+          <div className="min-w-0 min-h-0 flex-1 overflow-y-auto p-6">
             <Outlet />
           </div>
         </main>
