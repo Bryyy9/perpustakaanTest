@@ -33,10 +33,10 @@ export default function Sidebar() {
               end={item.to === '/'}
               className={({ isActive }) =>
                 [
-                  'block rounded-xl border px-4 py-3 text-sm font-medium transition',
+                  'block rounded-xl border-l-[3px] px-4 py-3 text-sm font-medium transition',
                   isActive
-                    ? 'border-slate-200 bg-slate-100 text-slate-900'
-                    : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900',
+                    ? 'border-l-[#BBD5DA] border-slate-200 bg-[#DFF1F1] text-[#4a6a70]'
+                    : 'border-l-transparent border-transparent text-slate-600 hover:border-l-[#DFF1F1] hover:border-slate-200 hover:bg-[#F5F5F5] hover:text-[#4a6a70]',
                 ].join(' ')
               }
             >

@@ -137,7 +137,7 @@ export default function ResourceForm({
                 </>
               )}
               {fieldErrors[field.name] && (
-                <p className="mt-1 text-xs text-rose-600">{fieldErrors[field.name]}</p>
+                <p className="mt-1 text-xs text-[#FF0000]">{fieldErrors[field.name]}</p>
               )}
             </label>
           )
@@ -145,7 +145,7 @@ export default function ResourceForm({
       </div>
 
       {formError && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="rounded-xl border border-[#FF0000]/20 bg-[#FF0000]/5 px-4 py-3 text-sm text-[#FF0000]">
           {formError}
         </div>
       )}
@@ -160,7 +160,7 @@ export default function ResourceForm({
         </button>
         <button
           type="submit"
-          className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800"
+          className="rounded-xl border border-[#BBD5DA] bg-[#BBD5DA] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#a8c4c9]"
         >
           {submitLabel || 'Simpan'}
         </button>

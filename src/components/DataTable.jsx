@@ -194,7 +194,7 @@ export default function DataTable({
                               <button
                                 type="button"
                                 onClick={() => onEdit(row)}
-                                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                                className="rounded-lg border border-[#BBD5DA] bg-white px-3 py-1.5 text-xs font-medium text-[#4a6a70] hover:bg-[#F5F5F5]"
                               >
                                 Edit
                               </button>
@@ -203,7 +203,7 @@ export default function DataTable({
                               <button
                                 type="button"
                                 onClick={() => onDelete(row)}
-                                className="rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50"
+                                className="rounded-lg border border-[#FF0000]/30 bg-white px-3 py-1.5 text-xs font-medium text-[#FF0000] hover:bg-[#FF0000]/5"
                               >
                                 Hapus
                               </button>

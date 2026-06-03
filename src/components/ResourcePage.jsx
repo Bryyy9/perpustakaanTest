@@ -287,7 +287,7 @@ export default function ResourcePage({ resourceKey }) {
             <button
               type="button"
               onClick={openCreate}
-              className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800"
+              className="rounded-xl border border-[#BBD5DA] bg-[#BBD5DA] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#a8c4c9]"
             >
               Tambah Data
             </button>
