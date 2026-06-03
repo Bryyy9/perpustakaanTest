@@ -1,5 +1,16 @@
 import { http } from '../lib/http'
 
+export function createListApi(basePath) {
+  return {
+    list: async (query = '') => {
+      const { data } = await http.get(basePath, {
+        params: query ? { q: query } : undefined,
+      })
+      return data
+    },
+  }
+}
+
 export function createCrudApi(basePath, idField = 'id') {
   return {
     list: async (query = '') => {

@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import * as api from '../api'
 import DataTable from './DataTable'
 import Modal from './Modal'
 import ResourceForm from './ResourceForm'
-import { getErrorMessage, pickFirst } from '../lib/format'
 import { resourceConfigs } from '../config/resources'
-import * as api from '../api'
+import { pickFirst } from '../lib/format'
+import { showConfirmAlert, showErrorAlert, showSuccessAlert } from '../lib/alerts'
 
 const apiMap = {
   jenisBukuApi: api.jenisBukuApi,
@@ -21,9 +22,26 @@ export default function ResourcePage({ resourceKey }) {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [selectedRow, setSelectedRow] = useState(null)
-  const [message, setMessage] = useState(null)
   const [formOpen, setFormOpen] = useState(false)
   const [mode, setMode] = useState('create')
+  const listErrorShownRef = useRef(false)
+  const lookupErrorShownRef = useRef({})
+
+  const lookupSources = useMemo(
+    () => Array.from(new Set(config.fields.map((field) => field.optionsSource).filter(Boolean))),
+    [config.fields],
+  )
+
+  const requiresPeminjamanLookup =
+    lookupSources.includes('peminjaman') ||
+    resourceKey === 'denda' ||
+    config.fields.some((field) => field.suggestionSource === 'knownAnggota')
+
+  const peminjamanLookupQuery = useQuery({
+    queryKey: ['lookup', 'peminjaman'],
+    queryFn: () => api.peminjamanApi.list(),
+    enabled: requiresPeminjamanLookup,
+  })
 
   const listQuery = useQuery({
     queryKey: [config.queryKey, search],
@@ -35,49 +53,56 @@ export default function ResourcePage({ resourceKey }) {
     return Array.isArray(raw) ? raw : []
   }, [listQuery.data])
 
+  const peminjamanRows = useMemo(() => {
+    const raw =
+      peminjamanLookupQuery.data?.data ||
+      peminjamanLookupQuery.data?.data?.data ||
+      peminjamanLookupQuery.data?.data ||
+      []
+    return Array.isArray(raw) ? raw : []
+  }, [peminjamanLookupQuery.data])
+
   const createMutation = useMutation({
     mutationFn: endpoint.create,
     onSuccess: async () => {
-      setMessage({ type: 'success', text: 'Data berhasil disimpan.' })
+      await showSuccessAlert('Berhasil', 'Data berhasil disimpan.')
       setFormOpen(false)
       setSelectedRow(null)
       await queryClient.invalidateQueries({ queryKey: [config.queryKey] })
     },
-    onError: (error) => setMessage({ type: 'error', text: getErrorMessage(error) }),
+    onError: (error) => showErrorAlert('Gagal menyimpan data', error),
   })
 
   const updateMutation = useMutation({
     mutationFn: endpoint.update,
     onSuccess: async () => {
-      setMessage({ type: 'success', text: 'Data berhasil diperbarui.' })
+      await showSuccessAlert('Berhasil', 'Data berhasil diperbarui.')
       setFormOpen(false)
       setSelectedRow(null)
       await queryClient.invalidateQueries({ queryKey: [config.queryKey] })
     },
-    onError: (error) => setMessage({ type: 'error', text: getErrorMessage(error) }),
+    onError: (error) => showErrorAlert('Gagal memperbarui data', error),
   })
 
   const deleteMutation = useMutation({
     mutationFn: endpoint.remove,
     onSuccess: async () => {
-      setMessage({ type: 'success', text: 'Data berhasil dihapus.' })
+      await showSuccessAlert('Berhasil', 'Data berhasil dihapus.')
       await queryClient.invalidateQueries({ queryKey: [config.queryKey] })
     },
-    onError: (error) => setMessage({ type: 'error', text: getErrorMessage(error) }),
+    onError: (error) => showErrorAlert('Gagal menghapus data', error),
   })
 
   const openCreate = () => {
     setMode('create')
     setSelectedRow(null)
     setFormOpen(true)
-    setMessage(null)
   }
 
   const openEdit = (row) => {
     setMode('edit')
     setSelectedRow(row)
     setFormOpen(true)
-    setMessage(null)
   }
 
   const closeForm = () => {
@@ -96,51 +121,151 @@ export default function ResourcePage({ resourceKey }) {
   }
 
   const handleSubmit = (values) => {
-    if (mode === 'create') {
-      const payload = { ...values }
-      if (config.deleteKey && payload[config.deleteKey]) {
-        delete payload[config.deleteKey]
+    if (resourceKey === 'denda') {
+      const selectedId = String(values.id_peminjaman ?? '').trim()
+      const selectedRow = peminjamanRows.find(
+        (item) => String(item.id ?? item.id_peminjaman ?? '') === selectedId,
+      )
+
+      if (!selectedRow?.id_anggota) {
+        showErrorAlert(
+          'Gagal menyimpan data',
+          'ID peminjaman yang dipilih tidak memiliki pasangan ID anggota yang valid.',
+        )
+        return
       }
-      createMutation.mutate(payload)
+
+      const normalizedValues = {
+        ...values,
+        id_anggota: String(selectedRow.id_anggota),
+      }
+
+      if (mode === 'create') {
+        createMutation.mutate(normalizedValues)
+        return
+      }
+
+      updateMutation.mutate(normalizedValues)
       return
     }
 
-    const payload = { ...values }
-    if (config.deleteKey && !payload[config.deleteKey]) {
-      payload[config.deleteKey] = selectedRow?.[config.deleteKey] || selectedRow?.id
+    if (mode === 'create') {
+      createMutation.mutate(values)
+      return
     }
 
-    if (resourceKey === 'penulis') {
-      payload.id = selectedRow?.id || selectedRow?.id_penulis || payload.id
-    } else if (resourceKey === 'penerbit') {
-      payload.id = selectedRow?.id || selectedRow?.id_penerbit || payload.id
-    } else if (resourceKey === 'jenisBuku') {
-      payload.id = selectedRow?.id || payload.id
-    }
-
-    updateMutation.mutate(payload)
+    updateMutation.mutate(values)
   }
 
   const handleDelete = (row) => {
-    const confirmed = window.confirm(`Hapus data ${config.title} ini?`)
-    if (!confirmed) return
+    showConfirmAlert('Konfirmasi hapus', `Hapus data ${config.title} ini?`).then((result) => {
+      if (!result.isConfirmed) return
 
-    const payload =
-      resourceKey === 'peminjaman'
-        ? { id_peminjaman: row.id }
-        : resourceKey === 'denda'
-          ? { id_denda: row.id_denda }
-          : { id: row.id }
+      const payload = {
+        [config.deletePayloadKey || 'id']: row[config.deletePayloadKey || 'id'] || row.id,
+      }
 
-    deleteMutation.mutate(payload)
+      deleteMutation.mutate(payload)
+    })
   }
 
-  const loading = listQuery.isLoading || createMutation.isPending || updateMutation.isPending || deleteMutation.isPending
+  const loading =
+    listQuery.isLoading ||
+    createMutation.isPending ||
+    updateMutation.isPending ||
+    deleteMutation.isPending
+
   const handleView = config.viewPathBuilder
     ? (row) => {
         window.location.href = config.viewPathBuilder(row)
       }
     : undefined
+
+  const lookupOptions = useMemo(() => {
+    const peminjamanRaw =
+      peminjamanLookupQuery.data?.data ||
+      peminjamanLookupQuery.data?.data?.data ||
+      peminjamanLookupQuery.data?.data ||
+      []
+
+    return {
+      peminjaman: Array.isArray(peminjamanRaw)
+        ? peminjamanRaw.map((item) => {
+            const peminjamanId = String(item.id ?? item.id_peminjaman ?? '')
+            return {
+              value: peminjamanId,
+              label: `${peminjamanId} - ${item.id_anggota || '-'}`,
+            }
+          })
+        : [],
+    }
+  }, [peminjamanLookupQuery.data])
+
+  const knownAnggotaSuggestions = useMemo(() => {
+    const uniqueIds = new Set()
+    peminjamanRows.forEach((item) => {
+      if (item?.id_anggota) {
+        uniqueIds.add(String(item.id_anggota))
+      }
+    })
+    return Array.from(uniqueIds)
+  }, [peminjamanRows])
+
+  const fields = useMemo(() => {
+    return config.fields.map((field) => {
+      const nextField = { ...field }
+
+      if (field.optionsSource) {
+        const options = lookupOptions[field.optionsSource] || []
+        nextField.options = options
+        nextField.allowedValues = options.map((option) => option.value)
+      }
+
+      if (field.suggestionSource === 'knownAnggota') {
+        nextField.suggestions = knownAnggotaSuggestions
+      }
+
+      return nextField
+    })
+  }, [config.fields, lookupOptions, knownAnggotaSuggestions])
+
+  const lookupReady = lookupSources.every((source) => {
+    if (source !== 'peminjaman') return true
+    return !peminjamanLookupQuery?.isLoading && !peminjamanLookupQuery?.isError
+  })
+
+  useEffect(() => {
+    if (!listQuery.isError || !listQuery.error || listErrorShownRef.current) return
+    listErrorShownRef.current = true
+    showErrorAlert(`Gagal memuat ${config.title}`, listQuery.error)
+  }, [config.title, listQuery.error, listQuery.isError])
+
+  useEffect(() => {
+    if (!peminjamanLookupQuery?.isError || !peminjamanLookupQuery.error || lookupErrorShownRef.current.peminjaman) {
+      return
+    }
+    lookupErrorShownRef.current.peminjaman = true
+    showErrorAlert('Gagal memuat data peminjaman', peminjamanLookupQuery.error)
+  }, [peminjamanLookupQuery])
+
+  const deriveValues = (fieldName, value) => {
+    if (resourceKey !== 'denda' || fieldName !== 'id_peminjaman') {
+      return {}
+    }
+
+    const selectedId = String(value ?? '').trim()
+    if (!selectedId) {
+      return { id_anggota: '' }
+    }
+
+    const selectedRow = peminjamanRows.find(
+      (item) => String(item.id ?? item.id_peminjaman ?? '') === selectedId,
+    )
+
+    return {
+      id_anggota: selectedRow?.id_anggota ? String(selectedRow.id_anggota) : '',
+    }
+  }
 
   return (
     <section className="space-y-6">
@@ -169,19 +294,6 @@ export default function ResourcePage({ resourceKey }) {
         </div>
       </div>
 
-      {message && (
-        <div
-          className={[
-            'rounded-2xl border px-4 py-3 text-sm',
-            message.type === 'success'
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-              : 'border-rose-200 bg-rose-50 text-rose-800',
-          ].join(' ')}
-        >
-          {message.text}
-        </div>
-      )}
-
       <DataTable
         columns={config.columns}
         rows={rows}
@@ -190,22 +302,28 @@ export default function ResourcePage({ resourceKey }) {
         onDelete={handleDelete}
       />
 
-      {loading && (
-        <p className="text-sm text-slate-500">Memuat data...</p>
-      )}
+      {loading && <p className="text-sm text-slate-500">Memuat data...</p>}
 
       {formOpen && (
         <Modal
           title={mode === 'create' ? `Tambah ${config.title}` : `Edit ${config.title}`}
           onClose={closeForm}
         >
-          <ResourceForm
-            fields={config.fields}
-            initialValues={getInitialValues()}
-            onSubmit={handleSubmit}
-            onCancel={closeForm}
-            submitLabel={mode === 'create' ? 'Simpan' : 'Perbarui'}
-          />
+          {!lookupReady ? (
+            <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+              Memuat data referensi valid...
+            </div>
+          ) : (
+            <ResourceForm
+              mode={mode}
+              fields={fields}
+              initialValues={getInitialValues()}
+              onSubmit={handleSubmit}
+              onCancel={closeForm}
+              submitLabel={mode === 'create' ? 'Simpan' : 'Perbarui'}
+              deriveValues={deriveValues}
+            />
+          )}
         </Modal>
       )}
     </section>

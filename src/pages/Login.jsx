@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { getErrorMessage } from '../lib/format'
+import { validateLoginForm } from '../lib/formValidation'
+import { showErrorAlert, showSuccessAlert } from '../lib/alerts'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -9,6 +10,7 @@ export default function Login() {
   const [form, setForm] = useState({ username: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -20,11 +22,22 @@ export default function Login() {
     event.preventDefault()
     setLoading(true)
     setError('')
+    setFieldErrors({})
+
+    const result = validateLoginForm(form)
+    if (!result.isValid) {
+      setFieldErrors(result.errors)
+      setError(result.formError)
+      setLoading(false)
+      return
+    }
+
     try {
-      await login(form)
+      await login(result.payload)
+      await showSuccessAlert('Berhasil', 'Login berhasil.')
       navigate('/', { replace: true })
     } catch (err) {
-      setError(getErrorMessage(err))
+      await showErrorAlert('Login gagal', err)
     } finally {
       setLoading(false)
     }
@@ -43,15 +56,27 @@ export default function Login() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <label className="block">
             <span className="text-sm font-medium text-slate-700">Username</span>
             <input
               value={form.username}
-              onChange={(event) => setForm((current) => ({ ...current, username: event.target.value }))}
+              onChange={(event) => {
+                setForm((current) => ({ ...current, username: event.target.value }))
+                setFieldErrors((current) => {
+                  if (!current.username) return current
+                  const next = { ...current }
+                  delete next.username
+                  return next
+                })
+                setError('')
+              }}
               className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-              required
+              aria-invalid={Boolean(fieldErrors.username)}
             />
+            {fieldErrors.username && (
+              <p className="mt-1 text-xs text-rose-600">{fieldErrors.username}</p>
+            )}
           </label>
 
           <label className="block">
@@ -59,10 +84,22 @@ export default function Login() {
             <input
               type="password"
               value={form.password}
-              onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
+              onChange={(event) => {
+                setForm((current) => ({ ...current, password: event.target.value }))
+                setFieldErrors((current) => {
+                  if (!current.password) return current
+                  const next = { ...current }
+                  delete next.password
+                  return next
+                })
+                setError('')
+              }}
               className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-              required
+              aria-invalid={Boolean(fieldErrors.password)}
             />
+            {fieldErrors.password && (
+              <p className="mt-1 text-xs text-rose-600">{fieldErrors.password}</p>
+            )}
           </label>
 
           {error && (

@@ -1,21 +1,33 @@
 import { formatDate, prettyValue } from '../lib/format'
 
-export default function DataTable({ columns, rows, onEdit, onDelete, onView }) {
+export default function DataTable({
+  columns,
+  rows,
+  onEdit,
+  onDelete,
+  onView,
+  scrollable = false,
+  maxHeightClass = 'max-h-[70vh]',
+}) {
+  const wrapperClassName = scrollable
+    ? `w-full max-w-full overflow-x-auto overflow-y-auto ${maxHeightClass} rounded-2xl border border-slate-200 bg-white shadow-sm`
+    : 'w-full max-w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm'
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <table className="min-w-full divide-y divide-slate-200">
+    <div className={wrapperClassName}>
+      <table className="min-w-max w-full divide-y divide-slate-200">
         <thead className="bg-slate-50">
           <tr>
             {columns.map((column) => (
               <th
                 key={column.key}
-                className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                className="sticky top-0 z-10 bg-slate-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
               >
                 {column.label}
               </th>
             ))}
             {(onEdit || onDelete || onView) && (
-              <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <th className="sticky top-0 z-10 bg-slate-50 px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Aksi
               </th>
             )}
@@ -39,13 +51,13 @@ export default function DataTable({ columns, rows, onEdit, onDelete, onView }) {
                     ? column.render(row)
                     : row[column.key]
                   return (
-                    <td key={column.key} className="px-4 py-3 text-sm text-slate-700">
+                    <td key={column.key} className="whitespace-nowrap px-4 py-3 text-sm text-slate-700">
                       {column.type === 'date' ? formatDate(value) : prettyValue(value)}
                     </td>
                   )
                 })}
                 {(onEdit || onDelete || onView) && (
-                  <td className="px-4 py-3">
+                  <td className="whitespace-nowrap px-4 py-3">
                     <div className="flex justify-end gap-2">
                       {onView && (
                         <button

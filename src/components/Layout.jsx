@@ -27,7 +27,7 @@ export default function Layout() {
     <div className="min-h-screen bg-slate-100 text-slate-900">
       <div className="flex min-h-screen">
         <Sidebar />
-        <main className="flex-1">
+        <main className="min-w-0 flex-1">
           <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
             <div className="flex items-center justify-between px-6 py-4">
               <div>
@@ -50,7 +50,7 @@ export default function Layout() {
             </div>
           </header>
 
-          <div className="p-6">
+          <div className="min-w-0 p-6">
             <Outlet />
           </div>
         </main>
