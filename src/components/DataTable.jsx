@@ -194,7 +194,7 @@ function DataTable({
                               <button
                                 type="button"
                                 onClick={() => onEdit(row)}
-                                className="rounded-lg border border-[#BBD5DA] bg-white px-3 py-1.5 text-xs font-medium text-[#4a6a70] hover:bg-[#F5F5F5]"
+                                className="rounded-lg border border-primary bg-white px-3 py-1.5 text-xs font-medium text-primary-text hover:bg-surface-hover"
                               >
                                 Edit
                               </button>
@@ -203,7 +203,7 @@ function DataTable({
                               <button
                                 type="button"
                                 onClick={() => onDelete(row)}
-                                className="rounded-lg border border-[#FF0000]/30 bg-white px-3 py-1.5 text-xs font-medium text-[#FF0000] hover:bg-[#FF0000]/5"
+                                className="rounded-lg border border-danger/30 bg-white px-3 py-1.5 text-xs font-medium text-danger hover:bg-danger/5"
                               >
                                 Hapus
                               </button>

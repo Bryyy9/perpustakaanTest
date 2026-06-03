@@ -106,7 +106,7 @@ export default function Login() {
                   aria-invalid={Boolean(fieldErrors.username)}
                 />
                 {fieldErrors.username && (
-                  <p className="mt-1 text-xs text-[#FF0000]">{fieldErrors.username}</p>
+                  <p className="mt-1 text-xs text-danger">{fieldErrors.username}</p>
                 )}
               </label>
 
@@ -130,12 +130,12 @@ export default function Login() {
                   aria-invalid={Boolean(fieldErrors.password)}
                 />
                 {fieldErrors.password && (
-                  <p className="mt-1 text-xs text-[#FF0000]">{fieldErrors.password}</p>
+                  <p className="mt-1 text-xs text-danger">{fieldErrors.password}</p>
                 )}
               </label>
 
               {error && (
-                <div className="rounded-xl border border-[#FF0000]/20 bg-[#FF0000]/5 px-4 py-3 text-sm text-[#FF0000]">
+                <div className="rounded-xl border border-danger/20 bg-danger/5 px-4 py-3 text-sm text-danger">
                   {error}
                 </div>
               )}
@@ -143,7 +143,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-xl border border-[#BBD5DA] bg-[#BBD5DA] px-4 py-3 text-sm font-medium text-white transition hover:bg-[#a8c4c9] disabled:cursor-not-allowed disabled:opacity-70"
+                className="w-full rounded-xl border border-primary bg-primary px-4 py-3 text-sm font-medium text-white transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? 'Memproses...' : 'Login'}
               </button>

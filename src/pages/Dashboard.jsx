@@ -65,7 +65,7 @@ export default function Dashboard() {
                 <Link
                   key={card.label}
                   to={card.to}
-                  className="rounded-2xl border border-slate-200 border-t-4 border-t-[#BBD5DA] bg-white p-5 shadow-sm transition hover:border-[#BBD5DA] hover:bg-[#F5F5F5]"
+                  className="rounded-2xl border border-slate-200 border-t-4 border-t-primary bg-white p-5 shadow-sm transition hover:border-primary hover:bg-surface-hover"
                 >
                   <p className="text-sm font-medium text-slate-600">{card.label}</p>
                   <div className="mt-4 flex items-end justify-between gap-4">
@@ -103,7 +103,7 @@ export default function Dashboard() {
                 <Link
                   key={label}
                   to={to}
-                  className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-[#BBD5DA] hover:bg-[#F5F5F5] hover:text-[#4a6a70]"
+                  className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-primary hover:bg-surface-hover hover:text-primary-text"
                 >
                   {label}
                 </Link>
@@ -128,7 +128,7 @@ export default function Dashboard() {
               {[
                 ['Layout', 'Desktop-first'],
                 ['Warna', 'Netral + teal aksen'],
-                ['Aksen', '#BBD5DA / #DFF1F1'],
+                ['Aksen', 'Primary / Light'],
                 ['Efek', 'Minimal dan fungsional'],
               ].map(([label, value]) => (
                 <div
