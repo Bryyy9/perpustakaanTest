@@ -68,13 +68,13 @@ export default function ResourceForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-      <div className="grid gap-4 md:grid-cols-2">
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+      <div className="grid gap-4 lg:grid-cols-2">
         {fields.map((field) => {
           if (!visibleInMode(field, mode)) return null
 
           const inputClass =
-            'mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
+            'mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
           const isReadOnly = field.readOnly || false
           const fieldType =
             field.type === 'datetime'
@@ -86,8 +86,8 @@ export default function ResourceForm({
                   : field.type || 'text'
 
           return (
-            <label key={field.name} className={field.fullWidth ? 'md:col-span-2' : ''}>
-              <span className="text-sm font-medium text-slate-700">{field.label}</span>
+            <label key={field.name} className={`${field.fullWidth ? 'lg:col-span-2' : ''} block`}>
+              <span className="text-sm font-medium text-slate-800">{field.label}</span>
               {field.type === 'textarea' ? (
                 <textarea
                   value={values[field.name]}
@@ -150,17 +150,17 @@ export default function ResourceForm({
         </div>
       )}
 
-      <div className="flex justify-end gap-3">
+      <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
           Batal
         </button>
         <button
           type="submit"
-          className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+          className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800"
         >
           {submitLabel || 'Simpan'}
         </button>

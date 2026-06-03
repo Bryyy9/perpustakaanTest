@@ -24,19 +24,21 @@ export default function Layout() {
         : 'Dashboard')
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="flex min-h-screen">
         <Sidebar />
         <main className="min-w-0 flex-1">
-          <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
+          <header className="sticky top-0 z-10 border-b border-slate-200 bg-white">
             <div className="flex items-center justify-between px-6 py-4">
               <div>
-                <p className="text-sm text-slate-500">Perpustakaan</p>
-                <h1 className="text-lg font-semibold">{title}</h1>
+                <p className="text-xs font-medium uppercase tracking-[0.24em] text-slate-500">
+                  Perpustakaan
+                </p>
+                <h1 className="text-lg font-semibold tracking-tight text-slate-900">{title}</h1>
               </div>
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium">{username || 'Admin'}</p>
+                  <p className="text-sm font-medium text-slate-900">{username || 'Admin'}</p>
                   <p className="text-xs text-slate-500">Session aktif</p>
                 </div>
                 <button

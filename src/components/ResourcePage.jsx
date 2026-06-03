@@ -20,6 +20,7 @@ export default function ResourcePage({ resourceKey }) {
   const config = resourceConfigs[resourceKey]
   const endpoint = apiMap[config.apiKey]
   const queryClient = useQueryClient()
+  const resourceLabel = config.title.replace(/^Kelola\s+/i, '')
   const [search, setSearch] = useState('')
   const [selectedRow, setSelectedRow] = useState(null)
   const [formOpen, setFormOpen] = useState(false)
@@ -169,12 +170,6 @@ export default function ResourcePage({ resourceKey }) {
     })
   }
 
-  const loading =
-    listQuery.isLoading ||
-    createMutation.isPending ||
-    updateMutation.isPending ||
-    deleteMutation.isPending
-
   const handleView = config.viewPathBuilder
     ? (row) => {
         window.location.href = config.viewPathBuilder(row)
@@ -269,40 +264,58 @@ export default function ResourcePage({ resourceKey }) {
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-medium text-slate-500">Admin</p>
-          <h2 className="text-2xl font-semibold text-slate-900">{config.title}</h2>
-          <p className="mt-1 text-sm text-slate-600">{config.description}</p>
+      <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+              Area admin
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
+              {config.title}
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">{config.description}</p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            {config.queryKey && (
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder={`Cari ${resourceLabel.toLowerCase()}...`}
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition sm:min-w-80 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              />
+            )}
+            <button
+              type="button"
+              onClick={openCreate}
+              className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800"
+            >
+              Tambah Data
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          {config.queryKey && (
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Cari data..."
-              className="min-w-72 rounded-xl border border-slate-300 px-4 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-            />
-          )}
-          <button
-            type="button"
-            onClick={openCreate}
-            className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-          >
-            Tambah Data
-          </button>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+            Pencarian aktif
+          </span>
+          <span>Gunakan tabel untuk meninjau, mengubah, dan menghapus data.</span>
         </div>
       </div>
 
-      <DataTable
-        columns={config.columns}
-        rows={rows}
-        onView={handleView}
-        onEdit={openEdit}
-        onDelete={handleDelete}
-      />
-
-      {loading && <p className="text-sm text-slate-500">Memuat data...</p>}
+      <div className="space-y-3">
+        <DataTable
+          columns={config.columns}
+          rows={rows}
+          onView={handleView}
+          onEdit={openEdit}
+          onDelete={handleDelete}
+          isLoading={listQuery.isLoading}
+          emptyTitle={`Belum ada ${resourceLabel.toLowerCase()}`}
+          emptyDescription={`Data ${resourceLabel.toLowerCase()} belum tersedia atau belum cocok dengan pencarian.`}
+          scrollable
+          maxHeightClass="max-h-[72vh]"
+        />
+      </div>
 
       {formOpen && (
         <Modal
@@ -310,7 +323,7 @@ export default function ResourcePage({ resourceKey }) {
           onClose={closeForm}
         >
           {!lookupReady ? (
-            <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
               Memuat data referensi valid...
             </div>
           ) : (
