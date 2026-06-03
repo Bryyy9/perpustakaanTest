@@ -32,7 +32,7 @@ export function showSuccessAlert(title, text) {
     icon: 'success',
     title,
     text,
-    confirmButtonColor: '#BBD5DA',
+    confirmButtonColor: '#0d9488',
   })
 }
 
@@ -41,7 +41,7 @@ export function showErrorAlert(title, error) {
     icon: 'error',
     title,
     text: typeof error === 'string' ? error : getApiErrorMessage(error),
-    confirmButtonColor: '#FF0000',
+    confirmButtonColor: '#ef4444',
   })
 }
 
@@ -53,7 +53,7 @@ export function showConfirmAlert(title, text) {
     showCancelButton: true,
     confirmButtonText: 'Ya, lanjutkan',
     cancelButtonText: 'Batal',
-    confirmButtonColor: '#FF0000',
-    cancelButtonColor: '#6b7280',
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#64748b',
   })
 }
