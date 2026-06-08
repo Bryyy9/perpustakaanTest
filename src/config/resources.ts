@@ -1,4 +1,41 @@
-export const publicBookColumns = [
+export interface ColumnDef {
+  key: string;
+  label: string;
+  type?: string;
+}
+
+export interface FieldDef {
+  name: string;
+  label: string;
+  type?: string;
+  required?: boolean;
+  minLength?: number;
+  modes?: string[];
+  readOnly?: boolean;
+  fullWidth?: boolean;
+  format?: string;
+  placeholder?: string;
+  suggestionSource?: string;
+  omitWhenEmpty?: boolean;
+  optionsSource?: string;
+  options?: { label: string; value: string }[];
+  suggestions?: string[];
+  allowedValues?: string[];
+}
+
+export interface ResourceConfig {
+  title: string;
+  description: string;
+  queryKey: string;
+  apiKey: string;
+  columns: ColumnDef[];
+  fields: FieldDef[];
+  mapEditValues?: (row: any) => any;
+  deletePayloadKey: string;
+  viewPathBuilder?: (row: any) => string;
+}
+
+export const publicBookColumns: ColumnDef[] = [
   { key: 'id_buku', label: 'ID Buku' },
   { key: 'isbn', label: 'ISBN' },
   { key: 'judul_buku', label: 'Judul' },
@@ -9,7 +46,7 @@ export const publicBookColumns = [
   { key: 'stok_buku', label: 'Stok' },
 ]
 
-export const resourceConfigs = {
+export const resourceConfigs: Record<string, ResourceConfig> = {
   jenisBuku: {
     title: 'Kelola Jenis Buku',
     description: 'CRUD kategori jenis buku.',
