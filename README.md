@@ -1,6 +1,6 @@
 # 📚 Perpustakaan — Frontend
 
-Frontend admin panel untuk sistem manajemen perpustakaan. Desktop-first, navigasi tetap di kiri, konten scroll di kanan. Dibangun dengan React + Vite + Tailwind CSS v4.
+Frontend admin panel untuk sistem manajemen perpustakaan. Desktop-first, navigasi tetap di kiri, konten scroll di kanan. Dibangun dengan React + TypeScript + Vite + Tailwind CSS v4.
 
 ---
 
@@ -9,6 +9,7 @@ Frontend admin panel untuk sistem manajemen perpustakaan. Desktop-first, navigas
 | Lapisan | Pustaka |
 |---|---|
 | Framework | React 18 |
+| Bahasa | TypeScript |
 | Bundler | Vite |
 | CSS | Tailwind CSS v4 (`@tailwindcss/vite`) |
 | Routing | React Router v6 |
@@ -16,6 +17,7 @@ Frontend admin panel untuk sistem manajemen perpustakaan. Desktop-first, navigas
 | HTTP client | Axios |
 | Notifikasi | SweetAlert2 |
 | Form | Vanilla React + custom validation |
+| Testing | Vitest + React Testing Library |
 
 Tidak ada state management global selain React Context (hanya untuk auth). Tidak ada CSS module — semua styling via Tailwind utility classes.
 
@@ -147,7 +149,7 @@ Data dimuat paralel via `useQueries` dari TanStack Query.
 
 ### 7. Validasi form
 
-Form validation logic dipisah di `src/lib/formValidation.js`:
+Form validation logic dipisah di `src/lib/formValidation.ts`:
 - `validateResourceForm` — validasi CRUD fields (required, minLength, email, number, select, omitWhenEmpty)
 - `validateLoginForm` — validasi login (username + password required)
 - Error per-field ditampilkan dengan teks merah
@@ -156,7 +158,7 @@ Form validation logic dipisah di `src/lib/formValidation.js`:
 
 ### 8. Autentikasi
 
-Auth state disimpan di React Context (`AuthContext`) + localStorage. Token otomatis dikirim via Axios interceptor (`src/lib/http.js`). Jika response 401, dispatch event `auth:expired` yang memicu logout otomatis.
+Auth state disimpan di React Context (`AuthContext`) + localStorage. Token otomatis dikirim via Axios interceptor (`src/lib/http.ts`). Jika response 401, dispatch event `auth:expired` yang memicu logout otomatis.
 
 `ProtectedRoute` mengecek `isAuthenticated` — redirect ke `/login` jika tidak valid.
 
@@ -164,7 +166,7 @@ Form login memiliki `autoComplete="username"` dan `autoComplete="current-passwor
 
 ### 9. Notifikasi
 
-Semua feedback (sukses/error/konfirmasi) menggunakan SweetAlert2 via `src/lib/alerts.js`:
+Semua feedback (sukses/error/konfirmasi) menggunakan SweetAlert2 via `src/lib/alerts.ts`:
 - `showSuccessAlert` — operasi berhasil
 - `showErrorAlert` — operasi gagal (parse error message dari API response)
 - `showConfirmAlert` — konfirmasi sebelum hapus
@@ -182,48 +184,57 @@ Halaman detail (`BukuDetail`, `PeminjamanDetail`) menampilkan skeleton penuh saa
 ```
 src/
 ├── api/
-│   ├── index.js              # Inisialisasi semua API endpoint
-│   ├── auth.js               # Login API
-│   └── resources.js          # Factory createCrudApi
+│   ├── index.ts              # Inisialisasi semua API endpoint
+│   ├── auth.ts               # Login API
+│   └── resources.ts          # Factory createCrudApi
 ├── components/
-│   ├── DataTable.jsx          # Tabel generik (pagination, scroll, skeleton)
-│   ├── Layout.jsx             # Layout utama (sidebar + header + konten)
-│   ├── Modal.jsx              # Modal dialog (aksesibel, focus trap)
-│   ├── ProtectedRoute.jsx     # Route guard autentikasi
-│   ├── ResourceForm.jsx       # Form generik (dinamis berdasarkan config)
-│   ├── ResourcePage.jsx       # Halaman CRUD generik
-│   └── Sidebar.jsx            # Navigasi sidebar (desktop panel + mobile drawer)
+│   ├── DataTable.tsx          # Tabel generik (pagination, scroll, skeleton)
+│   ├── Layout.tsx             # Layout utama (sidebar + header + konten)
+│   ├── Modal.tsx              # Modal dialog (aksesibel, focus trap)
+│   ├── ProtectedRoute.tsx     # Route guard autentikasi
+│   ├── ResourceForm.tsx       # Form generik (dinamis berdasarkan config)
+│   ├── ResourcePage.tsx       # Halaman CRUD generik
+│   └── Sidebar.tsx            # Navigasi sidebar (desktop panel + mobile drawer)
 ├── config/
-│   └── resources.js           # Konfigurasi tiap entitas (kolom, field, mapping)
+│   └── resources.ts           # Konfigurasi tiap entitas (kolom, field, mapping)
 ├── context/
-│   └── AuthContext.jsx        # Auth state (token, username, login, logout)
+│   └── AuthContext.tsx        # Auth state (token, username, login, logout)
 ├── hooks/
-│   └── useDebounce.js         # Debounce hook untuk search input
+│   └── useDebounce.ts         # Debounce hook untuk search input
 ├── lib/
-│   ├── alerts.js              # SweetAlert2 wrappers
-│   ├── format.js              # Utility format (date, number, extractList, dll)
-│   ├── formValidation.js      # Validasi form resource + login
-│   └── http.js                # Axios instance + interceptor token
+│   ├── alerts.ts              # SweetAlert2 wrappers
+│   ├── format.ts              # Utility format (date, number, extractList, dll)
+│   ├── formValidation.ts      # Validasi form resource + login
+│   └── http.ts                # Axios instance + interceptor token
 ├── pages/
 │   ├── admin/
-│   │   ├── DendaPage.jsx
-│   │   ├── JenisBukuPage.jsx
-│   │   ├── PeminjamanDetail.jsx
-│   │   ├── PeminjamanPage.jsx
-│   │   ├── PenerbitPage.jsx
-│   │   └── PenulisPage.jsx
-│   ├── BukuDetail.jsx
-│   ├── BukuList.jsx
-│   ├── Dashboard.jsx
-│   └── Login.jsx
-├── App.jsx                    # Routing
+│   │   ├── DendaPage.tsx
+│   │   ├── JenisBukuPage.tsx
+│   │   ├── PeminjamanDetail.tsx
+│   │   ├── PeminjamanPage.tsx
+│   │   ├── PenerbitPage.tsx
+│   │   └── PenulisPage.tsx
+│   ├── BukuDetail.tsx
+│   ├── BukuList.tsx
+│   ├── Dashboard.tsx
+│   └── Login.tsx
+├── App.tsx                    # Routing
 ├── index.css                  # Tailwind + @theme (custom color tokens) + global styles
-└── main.jsx                   # Entry point
+└── main.tsx                   # Entry point
 ```
 
 ---
 
 ## Menjalankan
+
+Siapkan file environment terlebih dahulu:
+
+```bash
+# Salin konfigurasi environment default
+cp .env.example .env.development
+```
+
+Kemudian install dependensi dan jalankan server:
 
 ```bash
 npm install
@@ -232,7 +243,13 @@ npm run dev
 
 Server development berjalan di `http://localhost:5173` (default Vite).
 
-Backend API harus berjalan di `http://localhost:8001` (bisa dikonfigurasi di `.env`).
+Backend API harus berjalan di `http://localhost:8001`. Pastikan variabel `VITE_API_URL` di `.env.development` kosong agar dapat melalui proses *proxying* Vite dengan benar untuk menghindari isu CORS.
+
+Untuk menjalankan *unit test* via Vitest:
+
+```bash
+npm run test
+```
 
 ---
 
